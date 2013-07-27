@@ -1,5 +1,6 @@
 -module(wamp_msg).
 
+-export([decode/1]).
 -export([welcome/1]).
 -export([callresult/2]).
 -export([callerror/4]).
@@ -21,9 +22,12 @@
 %% Public
 %% ===================================================================
 
+decode(Raw) ->
+    wamp_util:json_decode(Raw).
+
 welcome(SessionId) ->
     {ok, Vsn} = application:get_key(wamp, vsn),
-    encode([?WELCOME, SessionId, 1, iolist_to_binary(["wamp-erlang/",Vsn])]).
+    encode([?WELCOME, SessionId, 1, iolist_to_binary(["erlwamp/",Vsn])]).
 
 callresult(Id, Reply) ->
     encode([?CALLRESULT, Id, Reply]).
@@ -39,4 +43,22 @@ event(Uri, Event) ->
 %% ===================================================================
 
 encode(Msg) ->
-    jiffy:encode(Msg).
+    wamp_util:json_encode(Msg).
+
+%% ===================================================================
+%% EUnit
+%% ===================================================================
+
+-ifdef(TEST).  
+-include_lib("eunit/include/eunit.hrl").
+
+welcome_test() ->
+    application:load(wamp),
+    ?assertMatch(<<"[0,\"session\",1,\"erlwamp/",_/binary>>,
+        welcome(<<"session">>)).
+
+callresult_test() ->
+    Output = <<"[3,\"id\",{\"key\":\"value\"}]">>,
+    ?assertMatch(Output, callresult(<<"id">>, {[{key, <<"value">>}]})).
+
+-endif.
