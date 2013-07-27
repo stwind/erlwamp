@@ -33,7 +33,12 @@ sockjs_init(Conn, State) ->
     {ok, State1}.
 
 sockjs_handle(Conn, Data, State) ->
-    handle_msg(Conn, wamp_msg:decode(Data), State).
+    case wamp_msg:decode(Data) of
+        {ok, Msg} ->
+            handle_msg(Conn, Msg, State);
+        {error, _} ->
+            {ok, State}
+    end.
 
 sockjs_terminate(_Conn, _State) ->
     ok.
@@ -49,7 +54,7 @@ handle_msg(Conn, #wamp_prefix{prefix = Prefix, uri = Uri}, State) ->
 handle_msg(Conn, #wamp_call{id = Id, uri = Uri, args = Args}, State) ->
     {Result, State1} = call_handler(call, Conn, {Uri, Args}, State),
     Msg = case Result of
-        {ok, Reply} -> wamp_msg:callresult(Id, Reply, State);
+        {ok, Reply} -> wamp_msg:callresult(Id, Reply);
         {error, Error} -> wamp_msg:callerror(Id, Error)
     end,
     sockjs_session:send(Msg, Conn),
@@ -67,7 +72,8 @@ handle_msg(Conn, #wamp_publish{
         topic = Topic, event = Event, 
         exclude_me = ExcludeMe, eligible = Eligible
     }, State) -> 
-    {ok, State1} = call_handler(publish, Conn, {Topic, Event, ExcludeMe, Eligible}, State),
+    Arg = {Topic, Event, ExcludeMe, Eligible},
+    {ok, State1} = call_handler(publish, Conn, Arg, State),
     {ok, State1};
 
 handle_msg(_, _, _) ->
@@ -79,7 +85,7 @@ session_id() ->
 
 call_handler(Fun, Conn, Args, #state{
         handler = Handler, handler_state = HState, id = SessionId} = State) ->
-    {ok, Reply, HState1} = do_call(Handler, Fun, {SessionId, Conn}, Args, HState),
+    {Reply, HState1} = do_call(Handler, Fun, {SessionId, Conn}, Args, HState),
     {Reply, State#state{handler_state = HState1}}.
 
 do_call(Mod, Fun, Client, undefined, State) ->
