@@ -1,0 +1,17 @@
+/ebin
+/doc
+/deps
+/logs
+/log
+/.eunit
+/docs
+.DS_Store
+*.swp
+*.dump
+*.beam
+*.o
+*.plt
+/priv/log
+/bin/rebar
+*.coverdata
+rebar
