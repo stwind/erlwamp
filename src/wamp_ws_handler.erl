@@ -7,6 +7,7 @@
 -export([sockjs_terminate/2]).
 
 -include("wamp_msg.hrl").
+-include_lib("eunit/include/eunit.hrl").
 
 -record(state, {
         handler :: module(),
