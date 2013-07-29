@@ -44,25 +44,29 @@ cleanup(_) ->
 %% ===================================================================
 
 call() ->
-    {ok, C} = start_client(),
+    [C] = start_clients(1),
     ?assertMatch(<<"hello">>, client:call(C, <<"echo">>, [<<"hello">>])).
 
 pubsub() ->
-    {ok, C1} = start_client(),
-    {ok, C2} = start_client(),
+    [C1, C2] = start_clients(2),
     Topic = <<"topic1">>,
     ok = client:subscribe(C1, Topic), ?wait(100),
     ok = client:subscribe(C2, Topic), ?wait(100),
     client:publish(C1, Topic, <<"from c1">>), ?wait(100),
     ?assertMatch({Topic, <<"from c1">>}, ensure_event_on(C2)),
-    ?assertMatch(none, ensure_event_on(C1)).
+    ?assertMatch(none, ensure_event_on(C1)),
+    client:publish(C1, Topic, <<"from c1 again">>, false), ?wait(100),
+    ?assertMatch({Topic, <<"from c1 again">>}, ensure_event_on(C2)),
+    ?assertMatch({Topic, <<"from c1 again">>}, ensure_event_on(C1)).
 
 %% ===================================================================
 %% Private
 %% ===================================================================
 
-start_client() ->
-    client:start_link(?URL, self()).
+start_clients(Count) ->
+    lists:map(fun(_) -> 
+                {ok, C} = client:start_link(?URL, self()), C
+        end, lists:seq(1, Count)).
 
 ensure_event_on(Pid) ->
     receive
