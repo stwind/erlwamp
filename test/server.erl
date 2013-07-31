@@ -2,6 +2,7 @@
 
 -export([init/1]).
 -export([welcome/2]).
+-export([prefix/3]).
 -export([call/3]).
 -export([subscribe/3]).
 -export([unsubscribe/3]).
@@ -24,6 +25,9 @@ init([]) ->
     #state{}.
 
 welcome(_, State) ->
+    {ok, State}.
+
+prefix(_, {_Prefix, _Uri}, State) ->
     {ok, State}.
 
 call(_, {<<"echo">>, [Msg]}, State) ->
