@@ -90,4 +90,4 @@ maybe_eligible([Sid | Rest], Subs) ->
     end.
 
 sent_event_to(Topic, Event, Subs) ->
-    [wamp:notify(Topic, Event, C) || C <- Subs].
+    [wamp:notify(C, Topic, Event) || C <- Subs].

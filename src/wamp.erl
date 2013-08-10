@@ -24,6 +24,6 @@ init_sockjs_state(Url, Handler, HandlerState, Options) ->
 info(Conn) ->
     sockjs_session:info(Conn).
 
-notify(Topic, Event, Conn) ->
+notify(Conn, Topic, Event) ->
     Msg = wamp_msg:event(Topic, Event),
     sockjs_session:send(Msg, Conn).
