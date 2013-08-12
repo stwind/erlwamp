@@ -7,6 +7,7 @@
 -export([subscribe/3]).
 -export([unsubscribe/3]).
 -export([publish/3]).
+-export([terminate/2]).
 
 -record(state, { }).
 
@@ -48,6 +49,9 @@ publish(Client, {Topic, Event, Exclude, Eligible}, State) ->
     Subs2 = maybe_eligible(Eligible, Subs1),
     sent_event_to(Topic, Event, Subs2),
     {ok, State}.
+
+terminate(_, _) ->
+    ok.
 
 %% ===================================================================
 %% Private

@@ -41,7 +41,8 @@ sockjs_handle(Conn, Data, State) ->
             {ok, State}
     end.
 
-sockjs_terminate(_Conn, _State) ->
+sockjs_terminate(Conn, State) ->
+    call_handler(terminate, Conn, undefined, State),
     ok.
 
 %% ===================================================================
