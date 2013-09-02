@@ -25,7 +25,8 @@ setup() ->
     ok = application:start(ranch),
     ok = application:start(cowboy),
     SockjsOpts = [{logger,fun(_,R,_) -> R end}],
-    Server = wamp:init_sockjs_state(<<"/wamp">>, server, [], SockjsOpts),
+    WampDisp = [{"/echo", echo}],
+    Server = wamp:init_sockjs_state(<<"/wamp">>, server, [], WampDisp, SockjsOpts),
     VRoutes = [{<<"/wamp/[...]">>, sockjs_cowboy_handler, Server}],
     Dispatch = cowboy_router:compile([{'_',  VRoutes}]),
     cowboy:start_http(wamp_http_listener, 10, [{port, ?PORT}],
@@ -45,7 +46,7 @@ cleanup(_) ->
 
 call() ->
     [C] = start_clients(1),
-    ?assertMatch(<<"hello">>, client:call(C, <<"echo">>, [<<"hello">>])).
+    ?assertMatch(<<"hello">>, client:call(C, <<"/echo">>, [<<"hello">>])).
 
 pubsub() ->
     [C1, C2] = start_clients(2),
