@@ -3,7 +3,7 @@
 {application, wamp,
   [
     {description, ""},
-    {vsn, "0.0.1"},
+    {vsn, git},
     {registered, []},
     {applications, [
         kernel,

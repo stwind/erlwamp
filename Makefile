@@ -20,14 +20,9 @@ deps: $(REBAR)
 clean: $(REBAR)
 	@$(REBAR) clean
 
-ifndef SUITES
-EUNIT_SUITES =
-else
-EUNIT_SUITES = suites=$(SUITES)
-endif
-test: $(REBAR) deps
+test: $(REBAR) app
 	@$(REBAR) compile -D TEST
-	@$(REBAR) eunit skip_deps=true $(EUNIT_SUITES)
+	@$(REBAR) eunit skip_deps=true $(if $(SUITES),suites=$(SUITES),)
 
 ct: $(REBAR) deps
 	@CT_COMPILE=true $(REBAR) compile -D TEST

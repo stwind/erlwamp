@@ -2,11 +2,11 @@
 
 -export([init/1]).
 -export([welcome/2]).
--export([prefix/3]).
--export([call/3]).
--export([subscribe/3]).
--export([unsubscribe/3]).
--export([publish/3]).
+-export([handle_wamp_prefix/3]).
+-export([handle_wamp_call/3]).
+-export([handle_wamp_sub/3]).
+-export([handle_wamp_unsub/3]).
+-export([handle_wamp_pub/3]).
 -export([terminate/2]).
 
 -record(state, { }).
@@ -25,33 +25,34 @@ init([]) ->
     ets:new(?CONNS,[named_table,public]),
     #state{}.
 
-welcome(_, State) ->
+welcome(_Client, State) ->
     {ok, State}.
 
-prefix(_, {_Prefix, _Uri}, State) ->
+handle_wamp_prefix({_Prefix, _Uri}, _Client, State) ->
     {ok, State}.
 
-call(_, {<<"echo">>, [Msg]}, State) ->
+handle_wamp_call({echo, _Env, [Msg]}, _Client, State) ->
     {{ok, Msg}, State};
 
-call(_, _, State) ->
+handle_wamp_call(D, _, State) ->
+    ?debugFmt("d ~p",[D]),
     {{ok, <<>>}, State}.
 
-subscribe(Client, Topic, State) ->
+handle_wamp_sub({default, Topic}, Client, State) ->
     {ok, add_sub(Topic, Client, State)}.
 
-unsubscribe(Client, Topic, State) ->
+handle_wamp_unsub({default, Topic}, Client, State) ->
     {ok, remove_sub(Topic, Client, State)}.
 
-publish(Client, {Topic, Event, Exclude, Eligible}, State) ->
+handle_wamp_pub({default, Topic, Event, Opts}, Client, State) ->
     Subs = get_subs(Topic),
-    Subs1 = maybe_exclude_me(Exclude, Client, Subs),
-    Subs2 = maybe_eligible(Eligible, Subs1),
+    Subs1 = maybe_exclude_me(proplists:get_value(exclude, Opts), Client, Subs),
+    Subs2 = maybe_eligible(proplists:get_value(eligible, Opts), Subs1),
     sent_event_to(Topic, Event, Subs2),
     {ok, State}.
 
-terminate(_, _) ->
-    ok.
+terminate(_, State) ->
+    {ok, State}.
 
 %% ===================================================================
 %% Private
