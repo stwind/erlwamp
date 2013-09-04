@@ -22,7 +22,7 @@
 
 init_state(Handler, Opts, Dispatch) ->
     #state{handler = Handler, dispatch = wamp_uri:compile(Dispatch), 
-        handler_state = Handler:init(Opts)}.
+        handler_state = Handler:setup(Opts)}.
 
 %% ===================================================================
 %% Callbacks

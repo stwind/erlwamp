@@ -1,13 +1,14 @@
-BASE_DIR = $(shell pwd)
-REBAR := $(BASE_DIR)/rebar
+BASE_DIR := $(shell pwd)
+REBAR_REPO := https://github.com/rebar/rebar.git
+REBAR ?= $(BASE_DIR)/rebar
+DEPS ?= deps
+
 DIALYZER := dialyzer
 DIALYZER_APPS := kernel stdlib sasl inets crypto public_key ssl
-DEPS := $(CURDIR)/deps
-APP := wamp
 
-BASIC_PLT := $(APP).plt
+BASIC_PLT := basic.plt
 
-.PHONY: all deps clean test ct xref docs lock-deps
+.PHONY: all app doc deps clean test ct xref docs lock-deps
 
 all: app
 
@@ -20,13 +21,12 @@ deps: $(REBAR)
 clean: $(REBAR)
 	@$(REBAR) clean
 
-test: $(REBAR) app
+test: $(REBAR)
 	@$(REBAR) compile -D TEST
 	@$(REBAR) eunit skip_deps=true $(if $(SUITES),suites=$(SUITES),)
 
-ct: $(REBAR) deps
-	@CT_COMPILE=true $(REBAR) compile -D TEST
-	@$(REBAR) ct skip_deps=true -v
+ct: $(REBAR) app
+	@$(REBAR) ct skip_deps=true
 
 $(BASIC_PLT): build-plt
 
@@ -40,7 +40,7 @@ dialyze: $(BASIC_PLT)
 xref: $(REBAR) clean app
 	@$(REBAR) xref skip_deps=true
 
-docs: $(REBAR)
+doc: $(REBAR) app
 	@$(REBAR) doc skip_deps=true
 
 lock-deps: $(REBAR) app
@@ -48,8 +48,10 @@ lock-deps: $(REBAR) app
 
 $(DEPS)/rebar:
 	@mkdir -p $(DEPS)
-	git clone https://github.com/rebar/rebar.git $(DEPS)/rebar
-
+	git clone $(REBAR_REPO) $(DEPS)/rebar
+ 
 $(REBAR): $(DEPS)/rebar
 	$(MAKE) -C $(DEPS)/rebar
 	cp $(DEPS)/rebar/rebar .
+ 
+rebar: $(REBAR)
