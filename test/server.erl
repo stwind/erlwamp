@@ -1,6 +1,6 @@
 -module(server).
 
--export([init/1]).
+-export([setup/1]).
 -export([welcome/2]).
 -export([handle_wamp_prefix/3]).
 -export([handle_wamp_call/3]).
@@ -20,7 +20,7 @@
 %% Callbacks
 %% ===================================================================
 
-init([]) ->
+setup([]) ->
     ets:new(?TOPICS,[named_table,public]),
     ets:new(?CONNS,[named_table,public]),
     #state{}.
@@ -34,8 +34,7 @@ handle_wamp_prefix({_Prefix, _Uri}, _Client, State) ->
 handle_wamp_call({echo, _Env, [Msg]}, _Client, State) ->
     {{ok, Msg}, State};
 
-handle_wamp_call(D, _, State) ->
-    ?debugFmt("d ~p",[D]),
+handle_wamp_call(_, _, State) ->
     {{ok, <<>>}, State}.
 
 handle_wamp_sub({default, Topic}, Client, State) ->
