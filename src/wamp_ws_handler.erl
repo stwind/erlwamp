@@ -104,4 +104,4 @@ client(Conn, #state{id = SessionId}) ->
     {SessionId, Conn}.
 
 match_uri(Uri, #state{dispatch = Dispatch}) ->
-    wamp_uri:match(Uri, Dispatch).
+    wamp_uri:match(cowboy_http:urldecode(Uri), Dispatch).
